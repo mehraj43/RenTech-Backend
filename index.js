@@ -12,6 +12,8 @@ const port = 8500;
 app.use(cors());
 app.use(express.json());  // To get a data in json formate
 
+app.use('/uploads',express.static('uploads'));
+
 app.use('/api/auth',auth);
 app.use('/api/productDetail',productDetail);
 app.use('/api/requestProduct',requestProduct);

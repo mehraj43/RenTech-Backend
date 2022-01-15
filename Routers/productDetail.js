@@ -14,7 +14,21 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+  // reject a file
+  if(file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png'){
+    cb(null, true);
+  }else{
+    cb(null, false);
+  }
+}
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter
+});
+
+const port = 8500;
 
 // ROUTE 1: Add product to my account using : POST "api/productDetail/addProduct"   -Login required
 router.post(
@@ -48,7 +62,7 @@ router.post(
         model: req.body.model,
         price: req.body.price,
         location: req.body.location,
-        productImage: req.file ? req.file.filename : null,
+        productImage: req.file ? `localhost:${port}/uploads/${req.file.filename}` : null,
       };
       if (duration) {
         newProduct.duration = duration;
@@ -69,7 +83,7 @@ router.post(
 // ROUTE 2: Get product using : GET "api/productDetail/getProduct"  -Login not required
 router.get('/getProduct', async (req, res) => {
   try {
-    const myProduct = await ProductDetail.find({});
+    const myProduct = await ProductDetail.find({ });
     res.send(myProduct);
   } catch (err) {
     res.status(500).send('Some error occured');
