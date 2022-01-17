@@ -3,6 +3,7 @@ const connectToMongo = require('./db');
 const auth = require('./Routers/auth');
 const productDetail = require('./Routers/productDetail');
 const requestProduct = require('./Routers/requestProduct');
+const reportedProduct = require('./Routers/reportedProduct');
 var cors = require('cors')
 
 connectToMongo();
@@ -17,6 +18,7 @@ app.use('/uploads',express.static('uploads'));
 app.use('/api/auth',auth);
 app.use('/api/productDetail',productDetail);
 app.use('/api/requestProduct',requestProduct);
+app.use('/api/reportProduct',reportedProduct);
 
 app.listen(port, ()=>{
     console.log(`App listen to the port - ${port}`);

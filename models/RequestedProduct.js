@@ -2,25 +2,32 @@ const mongoose = require('mongoose');
 
 // Schema for RequestProduct Collection 
 const RequestProductSchema = mongoose.Schema({
-    userId : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : 'userId'
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'userId',
     },
-    productId : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : 'productId'
+    productName: {
+        type: String,
+        required: true,
     },
-    description : {
-        type : String,
-        required : true
+    descOfProduct: {
+        type: String,
+        required: true,
     },
-    date : {
-        type : Date,
-        default : Date.now   // Seting Default Date to save the post time of users
+    modelName: {
+        type: String,
+    },
+    category: {
+        type: String,
+        required: true,
+    },
+    date: {
+        type: Date,
+        default: Date.now,
     }
 });
 
 // Creating Collection RequestProduct or using
-const RequestProduct = mongoose.model('requestProduct',RequestProductSchema);
+const RequestProduct = mongoose.model('requestProduct', RequestProductSchema);
 
 module.exports = RequestProduct; 

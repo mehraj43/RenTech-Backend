@@ -5,8 +5,10 @@ const fetchuser = require('../middleware/fetchuser')
 const { body, validationResult } = require('express-validator');
 
 // ROUTE 1: To add the requestDetail of product using : POST "/api/requestProduct/addRequestProduct"
-router.post('/addRequestProduct/:id', fetchuser,[
-    body('description','Enter a valid description').isLength({min:2})
+router.post('/addRequestProduct', fetchuser,[
+    body('productName','Name must be more than one word').isLength({min:2}),
+    body('descOfProduct','Enter a valid description').isLength({min:2}),
+    body('category','Enter a valid category').isLength({min:2}),
 ],async(req,res)=>{
     // If there are errors, return Bad requrest and the errors
     const errors = validationResult(req);
@@ -17,14 +19,20 @@ router.post('/addRequestProduct/:id', fetchuser,[
         return res.status(400).json({ errors: 'Price must be a positive number' });
     }
     try{
-        const product = await RequestProduct.create({
+        let newReqProduct = {
             userId: req.user.id,
-            productId: req.params.id,
-            description: req.body.description
-        });
+            productName: req.body.productName,
+            descOfProduct: req.body.descOfProduct,
+            category: req.body.category
+        }
+        if(req.body.modelName){
+            newReqProduct.modelName = req.body.modelName;
+        }
+        console.log(newReqProduct);
+        const product = await RequestProduct.create(newReqProduct);
         res.send(product);
     }catch(err){
-        res.status(500).send("Some error occured");
+        res.status(500).send("Some error occured in");
     }
 })
 

@@ -89,7 +89,7 @@ router.post(
 // ROUTE 2: Get product using : GET "api/productDetail/getProduct"  -Login not required
 router.get('/getProduct/:category', async (req, res) => {
   try {
-    const myProduct = await ProductDetail.find({category: req.params.category});
+    const myProduct = await ProductDetail.find({ category: req.params.category });
     res.send(myProduct);
   } catch (err) {
     res.status(500).send('Some error occured');
