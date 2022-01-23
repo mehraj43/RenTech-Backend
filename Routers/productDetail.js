@@ -109,17 +109,19 @@ router.get('/myProduct', fetchuser, async (req, res) => {
 // ROUTE 4: Update my product details using : PUT "api/productDetail/updateProduct" --Login required
 router.put('/updateProduct/:id', fetchuser, async (req, res) => {
   // If there are errors, return Bad requrest and the errors
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
   if (req.body.price < 0) {
     return res.status(400).json({ errors: 'Price must be a positive number' });
   }
   try {
-    const { price, location, duration, noOfProduct } = req.body;
+    const { productName, model, price, location, duration, noOfProduct } = req.body;
     let updateProduct = {};
     // if(productName){updateProduct.productName=productName};
+    if (productName) {
+      updateProduct.productName = productName;
+    }
+    if (model) {
+      updateProduct.model = model;
+    }
     if (price) {
       updateProduct.price = price;
     }

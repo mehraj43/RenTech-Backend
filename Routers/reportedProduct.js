@@ -8,11 +8,18 @@ const { body, validationResult } = require('express-validator');
 router.post('/ReportProduct/:id',fetchuser,[
     body('descOfReport','Enter a more on report').isLength({min:3})
 ], async(req,res)=>{
+    // If there are errors, return Bad requrest and the errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
     const newReport = {
         userId: req.user.id,
+        proOwnId: req.params.id,
         descOfReport: req.body.descOfReport
     }
-    res.send(newReport)
+    const Report = await ReportProduct.create(newReport);
+    res.send(Report);
 })
 
 
