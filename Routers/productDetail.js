@@ -89,7 +89,16 @@ router.post(
 // ROUTE 2: Get product using : GET "api/productDetail/getProduct"  -Login not required
 router.get('/getProduct/:category', async (req, res) => {
   try {
-    const myProduct = await ProductDetail.find({ category: req.params.category });
+    let myProduct = {};
+    let search = req.header('search');
+    if(search){
+      search = new RegExp(`${search}`,"g");
+      console.log(search);
+      myProduct = await ProductDetail.find({$and: [{category: req.params.category},{productName: {$regex: search} }] });
+    }else{
+      console.log(search);
+      myProduct = await ProductDetail.find({ category: req.params.category });
+    }
     res.send(myProduct);
   } catch (err) {
     res.status(500).send('Some error occured');
