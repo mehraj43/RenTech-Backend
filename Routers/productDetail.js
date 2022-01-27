@@ -93,7 +93,6 @@ router.get('/getProduct/:category', async (req, res) => {
     let search = req.header('search');
     if(search){
       search = new RegExp(`${search}`,"g");
-      console.log(search);
       myProduct = await ProductDetail.find({$and: [{category: req.params.category},{productName: {$regex: search} }] });
     }else{
       console.log(search);
