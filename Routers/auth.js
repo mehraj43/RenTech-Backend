@@ -7,7 +7,6 @@ const { body, validationResult } = require('express-validator');
 const fetchuser = require('../middleware/fetchuser')
 const bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
-const { json } = require('express/lib/response');
 const JWT_SECRET = 'RentUser'  // My sign value
 
 
@@ -51,7 +50,7 @@ router.post('/createuser', [
         }
 
         const authToken = jwt.sign(data, JWT_SECRET);
-        res.json({ authToken });
+        res.json({ sucess: true, authToken });
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Some Error occured");
@@ -90,9 +89,8 @@ router.post('/login', [
             }
         }
         const authToken = jwt.sign(payload, JWT_SECRET);
-        console.log(authToken);
 
-        res.json({ authToken });
+        res.json({ sucess: true, authToken });
     } catch (err) {
         console.error(err.message);
         res.status(500).send("Some Error occured");
@@ -100,7 +98,7 @@ router.post('/login', [
 })
 
 // ROUTE 3: Get loggedin User Details using: POST "/api/auth/getuser". Login required
-router.post('/getuser', fetchuser, async (req, res) => {
+router.get('/getuser', fetchuser, async (req, res) => {
     try {
         const userId = req.user.id;
         const user = await rentUser.findById(userId).select("-password");

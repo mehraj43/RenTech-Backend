@@ -4,10 +4,10 @@ const ReportProduct = require('../models/ReportProduct');
 const fetchuser = require('../middleware/fetchuser')
 const { body, validationResult } = require('express-validator');
 
-// Route 1: To add a Report : POST "/api/reportProduct/ReportProduct:id" -login required
-router.post('/ReportProduct/:id',fetchuser,[
-    body('descOfReport','Enter a more on report').isLength({min:3})
-], async(req,res)=>{
+// Route 1: To add a Report : POST "/api/reportProduct/ReportProduct" -login required
+router.post('/ReportProduct', fetchuser, [
+    body('descOfReport', 'Enter a more on report').isLength({ min: 3 })
+], async (req, res) => {
     // If there are errors, return Bad requrest and the errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -15,7 +15,8 @@ router.post('/ReportProduct/:id',fetchuser,[
     }
     const newReport = {
         userId: req.user.id,
-        proOwnId: req.params.id,
+        proOwnId: req.body.proOwnId,
+        proID: req.body.proID,
         descOfReport: req.body.descOfReport
     }
     const Report = await ReportProduct.create(newReport);

@@ -186,4 +186,6 @@ router.delete('/deleteProduct/:id', fetchuser, async (req, res) => {
   }
 });
 
+
+
 module.exports = router;

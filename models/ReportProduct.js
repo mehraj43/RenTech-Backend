@@ -10,6 +10,10 @@ const ReportProductSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'proOwnId',
     },
+    proID:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'proID',
+    },
     descOfReport: {
         type: String,
         required: true,
