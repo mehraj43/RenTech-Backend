@@ -145,16 +145,12 @@ router.delete('/deleteUser', fetchuser, async (req, res) => {
 // ROUTE 6: To add BookMark Products : PUT "/api/auth/addBookMarkProduct"  -->Login required
 router.put('/addBookMarkProducts', fetchuser, async (req, res) => {
     try {
-        console.log(req.body);
         const userId = req.user.id;
         let User = await rentUser.findById(userId);
         if (User) {
-            console.log(req.body.productID);
             let bookMarkProducts = JSON.parse(User.bookMarkProducts);
             bookMarkProducts.push(req.body.productID);
-            console.log(bookMarkProducts);
             bookMarkProducts = JSON.stringify(bookMarkProducts);
-            console.log(bookMarkProducts);
             const user = await rentUser.findByIdAndUpdate(userId, { $set: { bookMarkProducts } }, { new: true }).select("-password");
             res.send({ success: true, user });
         } else {
@@ -163,6 +159,33 @@ router.put('/addBookMarkProducts', fetchuser, async (req, res) => {
         }
     } catch (err) {
         console.error(error.message);
+        res.status(500).send("Internal Server Error");
+    }
+})
+
+router.put('/removeFromBookMark', fetchuser, async(req, res)=>{
+    try {
+        const userId = req.user.id;
+        let User = await rentUser.findById(userId);
+        if (User) {
+            let bookMarkProducts = JSON.parse(User.bookMarkProducts);
+            if(bookMarkProducts.includes(req.body.proId)){
+                const index = bookMarkProducts.indexOf(req.body.proId);
+                if( index > -1){
+                    bookMarkProducts.splice(index, 1);
+                }
+                bookMarkProducts = JSON.stringify(bookMarkProducts);
+                const user = await rentUser.findByIdAndUpdate(userId, { $set: { bookMarkProducts } }, { new: true }).select("-password");
+                res.send({ success: true, user });
+            }else{
+                res.send({success:false, error: "Product is already removed"});
+            }
+        } else {
+            console.log("Not");
+            return res.status(404).send('Not Allowed');
+        }
+    } catch (err) {
+        console.log(err);
         res.status(500).send("Internal Server Error");
     }
 })
