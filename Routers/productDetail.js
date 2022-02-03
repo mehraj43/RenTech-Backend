@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ProductDetail = require('../models/ProductDetails');
+const rentUser = require('../models/RentUser');
 const fetchuser = require('../middleware/fetchuser');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
@@ -91,11 +92,10 @@ router.get('/getProduct/:category', async (req, res) => {
   try {
     let myProduct = {};
     let search = req.header('search');
-    if(search){
-      search = new RegExp(`${search}`,"g");
-      myProduct = await ProductDetail.find({$and: [{category: req.params.category},{productName: {$regex: search} }] });
-    }else{
-      console.log(search);
+    if (search) {
+      search = new RegExp(`${search}`, "i");
+      myProduct = await ProductDetail.find({ $and: [{ category: req.params.category }, { productName: { $regex: search } }] });
+    } else {
       myProduct = await ProductDetail.find({ category: req.params.category });
     }
     res.send(myProduct);
@@ -185,6 +185,18 @@ router.delete('/deleteProduct/:id', fetchuser, async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
+router.get('/getBookMarkProducts', fetchuser, async (req, res) => {
+  try {
+    const User = await rentUser.findById(req.user.id);
+    let bookMarkProducts = JSON.parse(User.bookMarkProducts);
+    const myBookMarkProducts = await ProductDetail.find({ _id: { $in: bookMarkProducts } });
+    res.send(myBookMarkProducts);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Internal Server Error');
+  }
+})
 
 
 
