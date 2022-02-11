@@ -14,11 +14,13 @@ const ProductDetailSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-
   productImage: {
     type: String,
   },
   model: {
+    type: String,
+  },
+  proDesc: {
     type: String,
   },
   duration: {

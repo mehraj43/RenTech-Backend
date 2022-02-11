@@ -46,6 +46,7 @@ router.post(
     body('category', 'Enter a correct category').isLength({ min: 5 }),
     body('model', 'Enter a correct category').isLength({ min: 2 }),
     body('location', 'Enter a correct value').isLength({ min: 2 }),
+    body('proDesc', 'Enter a correct value').isLength({ min: 5 }),
   ],
   async (req, res) => {
     // If there are errors, return Bad requrest and the errors
@@ -66,6 +67,7 @@ router.post(
         category: req.body.category,
         model: req.body.model,
         price: req.body.price,
+        proDesc: req.body.proDesc,
         location: req.body.location,
         productImage: req.file
           ? `http://localhost:${port}/uploads/${req.file.filename}`
