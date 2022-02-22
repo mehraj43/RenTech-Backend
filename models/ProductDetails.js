@@ -40,16 +40,23 @@ const ProductDetailSchema = mongoose.Schema({
     required: true,
   },
   ratingOfProduct: {
-    type: Number,
-    default: 0,
+    type: String,
+    default: '[]',
   },
-  numberOfPeople: {
-    type: Number,
-    default: 0,
+
+  // To check the product is already ranted or not or when
+  dateOfRent:{
+    type: Date,
+    default: Date.now,
   },
+  dateOfRentExp:{
+    type: Date,
+    default: Date.now,
+  },
+
   date: {
     type: Date,
-    default: Date.now, // Seting Default Date to save the post/add time of users
+    default: Date.now, // Seting Default Date to save the post/add time of productDetails
   },
 });
 

@@ -56,7 +56,7 @@ router.post(
     }
     if (req.body.price < 0) {
       return res
-        .status(400)
+        .status(401)
         .json({ errors: 'Price must be a positive number' });
     }
     try {
@@ -180,6 +180,9 @@ router.delete('/deleteProduct/:id', fetchuser, async (req, res) => {
       return res.status(404).send('Not Allowed');
     }
 
+    if(product.dateOfRentExp > new Date()){
+      return res.status(200).send('Not allowed')
+    }
     product = await ProductDetail.findByIdAndDelete(req.params.id);
     res.json({ Success: 'Note has been successfully deleted', product });
   } catch (err) {
