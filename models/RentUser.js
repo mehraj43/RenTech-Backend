@@ -19,6 +19,10 @@ const RentUserSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    active: {
+        type: Boolean,
+        default: true
+    },
     bookMarkProducts: {
         type: String,
         default: '[]'

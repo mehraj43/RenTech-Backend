@@ -25,11 +25,19 @@ const ProductDetailSchema = mongoose.Schema({
   },
   duration: {
     type: Number,
-    default: null,
+    default: 28,
   },
   noOfProduct: {
     type: Number,
     default: 1,
+  },
+  noOfClick: {
+    type: Number,
+    default: 0
+  },
+  noOfBookMarked: {
+    type: Number,
+    default: 0
   },
   price: {
     type: Number,
@@ -43,7 +51,10 @@ const ProductDetailSchema = mongoose.Schema({
     type: String,
     default: '[]',
   },
-
+  userOfProduct:{
+    type: String,
+    default: null
+  },
   // To check the product is already ranted or not or when
   dateOfRent:{
     type: Date,
@@ -53,7 +64,6 @@ const ProductDetailSchema = mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-
   date: {
     type: Date,
     default: Date.now, // Seting Default Date to save the post/add time of productDetails

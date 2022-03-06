@@ -180,7 +180,7 @@ router.delete('/deleteProduct/:id', fetchuser, async (req, res) => {
       return res.status(404).send('Not Allowed');
     }
 
-    if(product.dateOfRentExp > new Date()){
+    if (product.dateOfRentExp > new Date()) {
       return res.status(200).send('Not allowed')
     }
     product = await ProductDetail.findByIdAndDelete(req.params.id);
@@ -191,6 +191,7 @@ router.delete('/deleteProduct/:id', fetchuser, async (req, res) => {
   }
 });
 
+// To getBookMarkedPrdoucts
 router.get('/getBookMarkProducts', fetchuser, async (req, res) => {
   try {
     const User = await rentUser.findById(req.user.id);
@@ -203,6 +204,58 @@ router.get('/getBookMarkProducts', fetchuser, async (req, res) => {
   }
 })
 
+// To count the number of Click on Product
+router.put('/increaseClick/:id', async (req, res) => {
+  try {
+    let count = await ProductDetail.find({ _id: req.params.id }, { _id: 0, noOfClick: 1 })
+    let noOfClickCount = count[0].noOfClick + 1;
+    let resPo = await ProductDetail.findByIdAndUpdate({ _id: req.params.id }, { $set: { noOfClick: noOfClickCount } })
+    res.send({ noOfClickCount })
+  } catch (err) {
+    res.status(500).send('Internal Server Error');
+  }
+})
 
+// To get the number of product
+router.get('/totalProduct', async (req, res) => {
+  try {
+    const NoOfProducts = await ProductDetail.aggregate(
+      [
+        { $sort: { productName: 1 } },
+        {
+          $group: {
+            _id: "$productName",
+            TotalProduct: { $sum: "$noOfProduct" }
+          }
+        },
+      ]
+    )
+
+    let productNames = [];
+    let totalProducts = [];
+
+    NoOfProducts.forEach(element => {
+      productNames.push(element._id);
+      totalProducts.push(element.TotalProduct);
+    });
+
+    res.status(200).json({ productNames, totalProducts });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal Server Error");
+  }
+})
+
+router.get('/myProductAna', fetchuser, async (req, res) => {
+  try {
+    const products = await ProductDetail.find({ userId: req.user.id })
+
+    console.log(products);
+    res.status(200).json({ products });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Internal Server Error");
+  }
+})
 
 module.exports = router;

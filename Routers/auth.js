@@ -3,6 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const rentUser = require('../models/RentUser');
+const ProductDetail = require('../models/ProductDetails');
 const { body, validationResult } = require('express-validator');
 const fetchuser = require('../middleware/fetchuser')
 const bcrypt = require('bcryptjs');
@@ -130,10 +131,11 @@ router.put('/updateDetail', fetchuser, async (req, res) => {
     }
 })
 
-// ROUTE 5: To delete user details or account using : DELETE "/api/auth/deleteUser"  -Login required
-router.delete('/deleteUser', fetchuser, async (req, res) => {
+// ROUTE 5: To delete user details or account using : DELETE "/api/auth/deleteUser"  -only Admin can use this
+router.delete('/deleteUser:id', fetchuser, async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = req.params.id;
+        await ProductDetail.deleteMany({ userId });
         const user = await rentUser.findByIdAndDelete(userId).select("-password");
         res.send(user);
     } catch (err) {
@@ -163,22 +165,23 @@ router.put('/addBookMarkProducts', fetchuser, async (req, res) => {
     }
 })
 
-router.put('/removeFromBookMark', fetchuser, async(req, res)=>{
+// ROUTE 7: to remove from BookMark
+router.put('/removeFromBookMark', fetchuser, async (req, res) => {
     try {
         const userId = req.user.id;
         let User = await rentUser.findById(userId);
         if (User) {
             let bookMarkProducts = JSON.parse(User.bookMarkProducts);
-            if(bookMarkProducts.includes(req.body.proId)){
+            if (bookMarkProducts.includes(req.body.proId)) {
                 const index = bookMarkProducts.indexOf(req.body.proId);
-                if( index > -1){
+                if (index > -1) {
                     bookMarkProducts.splice(index, 1);
                 }
                 bookMarkProducts = JSON.stringify(bookMarkProducts);
                 const user = await rentUser.findByIdAndUpdate(userId, { $set: { bookMarkProducts } }, { new: true }).select("-password");
                 res.send({ success: true, user });
-            }else{
-                res.send({success:false, error: "Product is already removed"});
+            } else {
+                res.send({ success: false, error: "Product is already removed" });
             }
         } else {
             console.log("Not");
