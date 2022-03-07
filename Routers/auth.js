@@ -154,7 +154,10 @@ router.put('/addBookMarkProducts', fetchuser, async (req, res) => {
             bookMarkProducts.push(req.body.productID);
             bookMarkProducts = JSON.stringify(bookMarkProducts);
             const user = await rentUser.findByIdAndUpdate(userId, { $set: { bookMarkProducts } }, { new: true }).select("-password");
-            res.send({ success: true, user });
+            let { noOfBookMarked } = await ProductDetail.findById(req.body.productID);
+            noOfBookMarked++;
+            const updateNoOfBookMarked = await ProductDetail.findByIdAndUpdate({ _id: req.body.productID }, { $set: { noOfBookMarked } }).select("noOfBookMarked")
+            res.send({ success: true, user, updateNoOfBookMarked });
         } else {
             console.log("Not");
             return res.status(404).send('Not Allowed');
@@ -179,7 +182,10 @@ router.put('/removeFromBookMark', fetchuser, async (req, res) => {
                 }
                 bookMarkProducts = JSON.stringify(bookMarkProducts);
                 const user = await rentUser.findByIdAndUpdate(userId, { $set: { bookMarkProducts } }, { new: true }).select("-password");
-                res.send({ success: true, user });
+                let { noOfBookMarked } = await ProductDetail.findById(req.body.proId);
+                noOfBookMarked--;
+                const updateNoOfBookMarked = await ProductDetail.findByIdAndUpdate({ _id: req.body.proId }, { $set: { noOfBookMarked } }).select("noOfBookMarked")
+                res.send({ success: true, user, updateNoOfBookMarked });
             } else {
                 res.send({ success: false, error: "Product is already removed" });
             }

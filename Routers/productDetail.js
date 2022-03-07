@@ -246,12 +246,24 @@ router.get('/totalProduct', async (req, res) => {
   }
 })
 
+// For user Data Analysis
 router.get('/myProductAna', fetchuser, async (req, res) => {
   try {
-    const products = await ProductDetail.find({ userId: req.user.id })
+    let products = await ProductDetail.find({ userId: req.user.id }, { productName: 1, ratingOfProduct: 1, noOfClick: 1, noOfBookMarked: 1 })
+    let productNames = [];
+    let ratingOfProducts = [];
+    let noOfClicks = [];
+    let noOfBookMarked = [];
 
-    console.log(products);
-    res.status(200).json({ products });
+    products.forEach(element => {
+      productNames.push(element.productName);
+      ratingOfProducts.push(element.ratingOfProduct);
+      noOfClicks.push(element.noOfClick);
+      noOfBookMarked.push(element.noOfBookMarked);
+    });
+
+    console.log(productNames, ratingOfProducts, noOfClicks, noOfBookMarked);
+    res.status(200).json({ productNames, ratingOfProducts, noOfClicks, noOfBookMarked });
   } catch (err) {
     console.log(err);
     res.status(500).send("Internal Server Error");
