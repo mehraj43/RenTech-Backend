@@ -13,7 +13,7 @@ const transport = nodemailer.createTransport({
   },
 });
 
-module.exports.sendConfirmationEmail = (name, email, password) => {
+module.exports.sendConfirmationEmail = (name, email, OTP) => {
   transport
     .sendMail({
       from: admin,
@@ -22,7 +22,7 @@ module.exports.sendConfirmationEmail = (name, email, password) => {
       html: `<h1>Email Confirmation</h1>
         <h2>Hello ${name}</h2>
         <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-        <h1>${password}</h1>
+        <h1>${OTP}</h1>
         </div>`,
     })
     .catch((err) => console.log(err));

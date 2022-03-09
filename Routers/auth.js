@@ -243,21 +243,72 @@ router.put('/removeFromBookMark', fetchuser, async (req, res) => {
 });
 
 // Sending OTP to verify email
-router.post('/getEmail', async (req, res) => {
+router.post('/getOTP', async (req, res) => {
   try {
     const OTP = otpGenerator.generate(6, {
       upperCaseAlphabets: true,
       specialChars: true,
     });
-    nodemailer.sendConfirmationEmail(
-      req.body.name,
-      req.body.email,
-      OTP
-    );
+    nodemailer.sendConfirmationEmail(req.body.email, req.body.email, OTP);
     res.status(200).send({ success: true, OTP });
   } catch (err) {
     console.log(err);
     res.status(500).send('Internal Server Error');
+  }
+});
+
+// checkMail if exist or not as well as Activiation then Send the OTP
+router.post('/resPassOTP', async (req, res) => {
+  try {
+    let user = await rentUser.findOne({ email: req.body.email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ error: 'Please try to login with correct credentials' });
+    }
+    const OTP = otpGenerator.generate(6, {
+      upperCaseAlphabets: true,
+      specialChars: true,
+    });
+    nodemailer.sendConfirmationEmail(req.body.email, req.body.email, OTP);
+    res.status(200).send({ success: true, OTP });
+  } catch (err) {
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// To reset password
+router.put('/changePass', async (req, res) => {
+  try {
+    let user = await rentUser.findOne({ email: req.body.email });
+    if (!user) {
+      return res
+        .status(400)
+        .json({ error: 'Please try to login with correct credentials' });
+    }
+    const salt = bcrypt.genSaltSync(10);
+    var secPass = bcrypt.hashSync(req.body.newPassword, salt);
+    user = await rentUser.findOneAndUpdate(
+      { email: req.body.email },
+      { $set: { password: secPass } }
+    );
+
+    // Creating JsonWebToken
+    const data = {
+      user: {
+        id: user.id,
+      },
+    };
+
+    const authToken = jwt.sign(data, JWT_SECRET);
+
+    res.status(200).send({
+      success: true,
+      message: 'Your Password is changed Successfully',
+      authToken,
+    });
+  } catch (err) {
+    res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
 });
 
