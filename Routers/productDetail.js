@@ -52,12 +52,12 @@ router.post(
     // If there are errors, return Bad requrest and the errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ message: errors.array() });
     }
     if (req.body.price < 0) {
       return res
         .status(401)
-        .json({ errors: 'Price must be a positive number' });
+        .json({ message: 'Price must be a positive number' });
     }
     try {
       const { duration, noOfProduct } = req.body;
@@ -81,9 +81,9 @@ router.post(
       }
 
       const product = await ProductDetail.create(newProduct);
-      res.send(product);
+      res.status(200).json({success:true, message:'Your product is post successfully'});
     } catch (err) {
-      res.status(500).send('Some error occured');
+      res.status(500).json({success:false, message:'Some error occured'});
     }
   }
 );
@@ -92,17 +92,17 @@ router.post(
 // ROUTE 2: Get product using : GET "api/productDetail/getProduct"  -Login not required
 router.get('/getProduct/:category', async (req, res) => {
   try {
-    let myProduct = {};
+    let products = {};
     let search = req.header('search');
     if (search) {
       search = new RegExp(`${search}`, "i");
-      myProduct = await ProductDetail.find({ $and: [{ category: req.params.category }, { productName: { $regex: search } }] });
+      products = await ProductDetail.find({ $and: [{ category: req.params.category }, { productName: { $regex: search } }] });
     } else {
-      myProduct = await ProductDetail.find({ category: req.params.category });
+      products = await ProductDetail.find({ category: req.params.category });
     }
-    res.send(myProduct);
+    res.status(200).json({success:true,products});
   } catch (err) {
-    res.status(500).send('Some error occured');
+    res.status(500).json({success:false, message:'Some error occured'});
   }
 });
 
@@ -110,9 +110,9 @@ router.get('/getProduct/:category', async (req, res) => {
 router.get('/myProduct', fetchuser, async (req, res) => {
   try {
     const myProduct = await ProductDetail.find({ userId: req.user.id });
-    res.send(myProduct);
+    res.status(200).json({success:true,myProduct});
   } catch (err) {
-    res.status(500).send('Some error occured');
+    res.status(500).json({success:false, message:'Some Error'});
   }
 });
 
@@ -120,7 +120,7 @@ router.get('/myProduct', fetchuser, async (req, res) => {
 router.put('/updateProduct/:id', fetchuser, async (req, res) => {
   // If there are errors, return Bad requrest and the errors
   if (req.body.price < 0) {
-    return res.status(400).json({ errors: 'Price must be a positive number' });
+    return res.status(400).json({ message: 'Price must be a positive number' });
   }
   try {
     const { productName, model, price, location, duration, noOfProduct } = req.body;
@@ -147,11 +147,11 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
     // Find the product to be Updated
     let Product = await ProductDetail.findById(req.params.id);
     if (!Product) {
-      res.status(404).send('Not found');
+      res.status(404).json({success:false, message:'Not found'});
     }
 
     if (Product.userId.toString() !== req.user.id) {
-      return res.status(404).send('Not Allowed');
+      return res.status(404).json({success:false, message:'Not Allowed'});
     }
 
     // Updating the product
@@ -160,9 +160,9 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
       { $set: updateProduct },
       { new: true }
     );
-    res.send(Product);
+    res.status(200).json({ success:true, message:'Your Product details is successfully updated' });
   } catch (err) {
-    res.status(500).send('Some error occured');
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
@@ -172,22 +172,21 @@ router.delete('/deleteProduct/:id', fetchuser, async (req, res) => {
     // Find the product to be Delete
     let product = await ProductDetail.findById(req.params.id);
     if (!product) {
-      res.status(404).send('Not found');
+      res.status(404).json({success:false, message:'Not found'});
     }
-
+    
     // Allow deletion only if user owns this product
     if (product.userId.toString() !== req.user.id) {
-      return res.status(404).send('Not Allowed');
+      return res.status(404).json({ success: false, message: 'Not allowed' });
     }
 
     if (product.dateOfRentExp > new Date()) {
       return res.status(200).send('Not allowed')
     }
     product = await ProductDetail.findByIdAndDelete(req.params.id);
-    res.json({ Success: 'Note has been successfully deleted', product });
+    res.json({ success:true, message: 'Product has been successfully deleted' });
   } catch (err) {
-    console.error(error.message);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
@@ -197,10 +196,9 @@ router.get('/getBookMarkProducts', fetchuser, async (req, res) => {
     const User = await rentUser.findById(req.user.id);
     let bookMarkProducts = JSON.parse(User.bookMarkProducts);
     const myBookMarkProducts = await ProductDetail.find({ _id: { $in: bookMarkProducts } });
-    res.send(myBookMarkProducts);
+    res.status(200).json({ success: true, myBookMarkProducts });
   } catch (err) {
-    console.log(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 })
 
@@ -210,9 +208,9 @@ router.put('/increaseClick/:id', async (req, res) => {
     let count = await ProductDetail.find({ _id: req.params.id }, { _id: 0, noOfClick: 1 })
     let noOfClickCount = count[0].noOfClick + 1;
     let resPo = await ProductDetail.findByIdAndUpdate({ _id: req.params.id }, { $set: { noOfClick: noOfClickCount } })
-    res.send({ noOfClickCount })
+    res.status(200).json({ success: true })
   } catch (err) {
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 })
 
@@ -239,10 +237,9 @@ router.get('/totalProduct', async (req, res) => {
       totalProducts.push(element.TotalProduct);
     });
 
-    res.status(200).json({ productNames, totalProducts });
+    res.status(200).json({ success: true, productNames, totalProducts });
   } catch (err) {
-    console.log(err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 })
 
@@ -263,10 +260,9 @@ router.get('/myProductAna', fetchuser, async (req, res) => {
     });
 
     console.log(productNames, ratingOfProducts, noOfClicks, noOfBookMarked);
-    res.status(200).json({ productNames, ratingOfProducts, noOfClicks, noOfBookMarked });
+    res.status(200).json({ success: true, productNames, ratingOfProducts, noOfClicks, noOfBookMarked });
   } catch (err) {
-    console.log(err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 })
 

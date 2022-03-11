@@ -10,9 +10,9 @@ const { body, validationResult } = require('express-validator');
 const fetchuser = require('../middleware/fetchuser');
 const bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
-const JWT_SECRET = 'RentUser'; // My sign value
+const { JWT_SECRET } = require('../config/auth.config');
+// const JWT_SECRET = 'RentUser'; // My sign value
 
-// const auth = require('../config/auth.config')
 const nodemailer = require('../config/nodemailer.config');
 
 // ROUTE 1: Creating a User using : POST '/api/auth/createuser'  -Login not required
@@ -61,10 +61,9 @@ router.post(
       };
 
       const authToken = jwt.sign(data, JWT_SECRET);
-      res.json({ success: true, authToken });
+      res.json({ success: true, authToken, message:'You have SignUp successfully' });
     } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Some Error occured');
+      res.status(500).json({ success: false, message:'Some Error occured'});
     }
   }
 );
@@ -80,7 +79,7 @@ router.post(
     // If there are errors, return Bad requrest and the errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ message: errors.array() });
     }
 
     const { email, password } = req.body;
@@ -90,7 +89,7 @@ router.post(
       if (!user) {
         return res
           .status(400)
-          .json({ error: 'Please try to login with correct credentials' });
+          .json({ message: 'Please try to login with correct credentials' });
       }
 
       // Comparing the password with their hash
@@ -98,7 +97,7 @@ router.post(
       if (!passwordCompare) {
         return res
           .status(400)
-          .json({ error: 'Please try to login with correct credentials' });
+          .json({ message: 'Please try to login with correct credentials' });
       }
 
       // To create a token
@@ -109,10 +108,9 @@ router.post(
       };
       const authToken = jwt.sign(payload, JWT_SECRET);
 
-      res.json({ success: true, authToken });
+      res.json({ success: true, authToken, message:'Login Successful' });
     } catch (err) {
-      console.error(err.message);
-      res.status(500).send('Some Error occured');
+      res.status(500).json({ success: false, message:'Some Error occured'});
     }
   }
 );
@@ -124,8 +122,7 @@ router.get('/getuser', fetchuser, async (req, res) => {
     const user = await rentUser.findById(userId).select('-password');
     res.send(user);
   } catch (err) {
-    console.error(error.message);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ success: false, message:'Some Error occured'});
   }
 });
 
@@ -134,7 +131,7 @@ router.put('/updateDetail', fetchuser, async (req, res) => {
   // If there are errors, return Bad requrest and the errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return res.status(400).json({ message: errors.array() });
   }
   const { name, location } = req.body;
   const newUser = {};
@@ -151,8 +148,7 @@ router.put('/updateDetail', fetchuser, async (req, res) => {
       .select('-password');
     res.send(user);
   } catch (err) {
-    console.error(error.message);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ success: false, message:'Some Error occured'});
   }
 });
 
@@ -164,8 +160,7 @@ router.delete('/deleteUser:id', fetchuser, async (req, res) => {
     const user = await rentUser.findByIdAndDelete(userId).select('-password');
     res.send(user);
   } catch (err) {
-    console.error(error.message);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ success: false, message:'Some Error occured'});
   }
 });
 
@@ -197,8 +192,7 @@ router.put('/addBookMarkProducts', fetchuser, async (req, res) => {
       return res.status(404).send('Not Allowed');
     }
   } catch (err) {
-    console.error(error.message);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ success: false, message:'Some Error occured'});
   }
 });
 
@@ -230,15 +224,13 @@ router.put('/removeFromBookMark', fetchuser, async (req, res) => {
         ).select('noOfBookMarked');
         res.send({ success: true, user, updateNoOfBookMarked });
       } else {
-        res.send({ success: false, error: 'Product is already removed' });
+        res.send({ success: false, message: 'Product is already removed' });
       }
     } else {
-      console.log('Not');
-      return res.status(404).send('Not Allowed');
+      return res.status(404).json({success:false,message:'Not Allowed'});
     }
   } catch (err) {
-    console.log(err);
-    res.status(500).send('Internal Server Error');
+    res.status(500).json({ success: false, message:'Some Error occured'});
   }
 });
 
@@ -261,7 +253,7 @@ router.post('/getOTP', async (req, res) => {
 router.post('/resPassOTP', async (req, res) => {
   try {
     let user = await rentUser.findOne({ email: req.body.email });
-    if (!user) {
+    if (!user || !user.active) {
       return res
         .status(400)
         .json({ error: 'Please try to login with correct credentials' });
@@ -293,19 +285,9 @@ router.put('/changePass', async (req, res) => {
       { $set: { password: secPass } }
     );
 
-    // Creating JsonWebToken
-    const data = {
-      user: {
-        id: user.id,
-      },
-    };
-
-    const authToken = jwt.sign(data, JWT_SECRET);
-
     res.status(200).send({
       success: true,
       message: 'Your Password is changed Successfully',
-      authToken,
     });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });

@@ -11,16 +11,20 @@ router.post('/ReportProduct', fetchuser, [
     // If there are errors, return Bad requrest and the errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+        return res.status(400).json({ message: errors.array() });
     }
-    const newReport = {
-        userId: req.user.id,
-        proOwnId: req.body.proOwnId,
-        proID: req.body.proID,
-        descOfReport: req.body.descOfReport
+    try {
+        const newReport = {
+            userId: req.user.id,
+            proOwnId: req.body.proOwnId,
+            proID: req.body.proID,
+            descOfReport: req.body.descOfReport
+        }
+        const Report = await ReportProduct.create(newReport);
+        res.status(200).json({ success: true, message: 'Report successfully submitted' });
+    } catch (err) {
+        res.status(500).json({success:false,message:'Some Error'})
     }
-    const Report = await ReportProduct.create(newReport);
-    res.send(Report);
 })
 
 
