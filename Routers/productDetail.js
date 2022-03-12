@@ -270,4 +270,15 @@ router.get('/myProductAna', fetchuser, async (req, res) => {
   }
 })
 
+// To get individual product 
+router.get('/getProductDe/:id', async(req,res)=>{
+  try{
+    const product = await ProductDetail.findById({_id:req.params.id});
+    console.log(product);
+    res.status(200).json({success:true, product});
+  }catch(err){
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+})
+
 module.exports = router;
