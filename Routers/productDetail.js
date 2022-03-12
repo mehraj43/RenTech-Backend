@@ -223,7 +223,8 @@ router.get('/totalProduct', async (req, res) => {
         {
           $group: {
             _id: "$productName",
-            TotalProduct: { $sum: "$noOfProduct" }
+            TotalProduct: { $sum: "$noOfProduct" },
+            MostPopular: {$sum: '$noOfClick'}
           }
         },
       ]
@@ -231,13 +232,17 @@ router.get('/totalProduct', async (req, res) => {
 
     let productNames = [];
     let totalProducts = [];
+    let popularityOfProducts = [];
 
     NoOfProducts.forEach(element => {
       productNames.push(element._id);
       totalProducts.push(element.TotalProduct);
+      popularityOfProducts.push(element.MostPopular);
     });
 
-    res.status(200).json({ success: true, productNames, totalProducts });
+    console.log(popularityOfProducts);
+
+    res.status(200).json({ success: true, productNames, totalProducts, popularityOfProducts });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
@@ -259,7 +264,6 @@ router.get('/myProductAna', fetchuser, async (req, res) => {
       noOfBookMarked.push(element.noOfBookMarked);
     });
 
-    console.log(productNames, ratingOfProducts, noOfClicks, noOfBookMarked);
     res.status(200).json({ success: true, productNames, ratingOfProducts, noOfClicks, noOfBookMarked });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
