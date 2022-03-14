@@ -5,6 +5,7 @@ const rentUser = require('../models/RentUser');
 const fetchuser = require('../middleware/fetchuser');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
+const RentUser = require('../models/RentUser');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -49,7 +50,7 @@ router.post(
     body('proDesc', 'Enter a correct value').isLength({ min: 5 }),
   ],
   async (req, res) => {
-    // If there are errors, return Bad requrest and the errors
+    // If there are errors, return Bad request and the errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: errors.array() });
@@ -81,9 +82,9 @@ router.post(
       }
 
       const product = await ProductDetail.create(newProduct);
-      res.status(200).json({success:true, message:'Your product is post successfully'});
+      res.status(200).json({ success: true, message: 'Your product is post successfully' });
     } catch (err) {
-      res.status(500).json({success:false, message:'Some error occured'});
+      res.status(500).json({ success: false, message: 'Some error occured' });
     }
   }
 );
@@ -100,9 +101,9 @@ router.get('/getProduct/:category', async (req, res) => {
     } else {
       products = await ProductDetail.find({ category: req.params.category });
     }
-    res.status(200).json({success:true,products});
+    res.status(200).json({ success: true, products });
   } catch (err) {
-    res.status(500).json({success:false, message:'Some error occured'});
+    res.status(500).json({ success: false, message: 'Some error occured' });
   }
 });
 
@@ -110,15 +111,15 @@ router.get('/getProduct/:category', async (req, res) => {
 router.get('/myProduct', fetchuser, async (req, res) => {
   try {
     const myProduct = await ProductDetail.find({ userId: req.user.id });
-    res.status(200).json({success:true,myProduct});
+    res.status(200).json({ success: true, myProduct });
   } catch (err) {
-    res.status(500).json({success:false, message:'Some Error'});
+    res.status(500).json({ success: false, message: 'Some Error' });
   }
 });
 
 // ROUTE 4: Update my product details using : PUT "api/productDetail/updateProduct" --Login required
 router.put('/updateProduct/:id', fetchuser, async (req, res) => {
-  // If there are errors, return Bad requrest and the errors
+  // If there are errors, return Bad request and the errors
   if (req.body.price < 0) {
     return res.status(400).json({ message: 'Price must be a positive number' });
   }
@@ -147,11 +148,11 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
     // Find the product to be Updated
     let Product = await ProductDetail.findById(req.params.id);
     if (!Product) {
-      res.status(404).json({success:false, message:'Not found'});
+      res.status(404).json({ success: false, message: 'Not found' });
     }
 
     if (Product.userId.toString() !== req.user.id) {
-      return res.status(404).json({success:false, message:'Not Allowed'});
+      return res.status(404).json({ success: false, message: 'Not Allowed' });
     }
 
     // Updating the product
@@ -160,7 +161,7 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
       { $set: updateProduct },
       { new: true }
     );
-    res.status(200).json({ success:true, message:'Your Product details is successfully updated' });
+    res.status(200).json({ success: true, message: 'Your Product details is successfully updated' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
@@ -172,9 +173,9 @@ router.delete('/deleteProduct/:id', fetchuser, async (req, res) => {
     // Find the product to be Delete
     let product = await ProductDetail.findById(req.params.id);
     if (!product) {
-      res.status(404).json({success:false, message:'Not found'});
+      res.status(404).json({ success: false, message: 'Not found' });
     }
-    
+
     // Allow deletion only if user owns this product
     if (product.userId.toString() !== req.user.id) {
       return res.status(404).json({ success: false, message: 'Not allowed' });
@@ -184,7 +185,7 @@ router.delete('/deleteProduct/:id', fetchuser, async (req, res) => {
       return res.status(200).send('Not allowed')
     }
     product = await ProductDetail.findByIdAndDelete(req.params.id);
-    res.json({ success:true, message: 'Product has been successfully deleted' });
+    res.json({ success: true, message: 'Product has been successfully deleted' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
@@ -224,7 +225,7 @@ router.get('/totalProduct', async (req, res) => {
           $group: {
             _id: "$productName",
             TotalProduct: { $sum: "$noOfProduct" },
-            MostPopular: {$sum: '$noOfClick'}
+            MostPopular: { $sum: '$noOfClick' }
           }
         },
       ]
@@ -239,8 +240,6 @@ router.get('/totalProduct', async (req, res) => {
       totalProducts.push(element.TotalProduct);
       popularityOfProducts.push(element.MostPopular);
     });
-
-    console.log(popularityOfProducts);
 
     res.status(200).json({ success: true, productNames, totalProducts, popularityOfProducts });
   } catch (err) {
@@ -259,7 +258,16 @@ router.get('/myProductAna', fetchuser, async (req, res) => {
 
     products.forEach(element => {
       productNames.push(element.productName);
-      ratingOfProducts.push(element.ratingOfProduct);
+      const rating = JSON.parse(element.ratingOfProduct);
+      let allRating = 0;
+      rating.forEach(rate => {
+        allRating += rate.rating;
+      });
+      if (allRating == '') {
+        ratingOfProducts.push(0);
+      } else {
+        ratingOfProducts.push(allRating / rating.length);
+      }
       noOfClicks.push(element.noOfClick);
       noOfBookMarked.push(element.noOfBookMarked);
     });
@@ -271,12 +279,43 @@ router.get('/myProductAna', fetchuser, async (req, res) => {
 })
 
 // To get individual product 
-router.get('/getProductDe/:id', async(req,res)=>{
-  try{
-    const product = await ProductDetail.findById({_id:req.params.id});
-    console.log(product);
-    res.status(200).json({success:true, product});
-  }catch(err){
+router.get('/getProductDe/:id', async (req, res) => {
+  try {
+    const product = await ProductDetail.findById({ _id: req.params.id });
+    res.status(200).json({ success: true, product });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+})
+
+// To give rating to the product
+router.put('/ratePorduct/:id', fetchuser, [
+  body('ratingDesc', 'reason must be more than 2 length').isLength({ min: 2 }),
+  body('rating', 'Must be Number').isNumeric()
+], async (req, res) => {
+  // If there are errors, return Bad request and the errors
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: true, message: errors.array() });
+  }
+  if (req.body.rating <= 0 && req.body.rating > 5) {
+    return res.status(400).json({ message: "rating must be greater than 0 or less than 5" });
+  }
+  try {
+    const { rating, ratingDesc } = req.body;
+    const userID = req.user.id;
+    const { name } = await RentUser.findById({ _id: userID });
+    let { ratingOfProduct, userId } = await ProductDetail.findById({ _id: req.params.id });
+    if (userID == userId || ratingOfProduct.includes(`${userID}`)) {
+      res.status(400).json({ success: false, message: "You are not allowed to rate this product" });
+    } else {
+      ratingOfProduct = JSON.parse(ratingOfProduct);
+      ratingOfProduct.push({ userID, userName: name, rating, ratingDesc })
+      ratingOfProduct = JSON.stringify(ratingOfProduct);
+      let resp = await ProductDetail.findByIdAndUpdate({ _id: req.params.id }, { $set: { ratingOfProduct: ratingOfProduct } });
+      res.status(200).json({ success: true, ratingOfProduct });
+    }
+  } catch (err) {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 })
