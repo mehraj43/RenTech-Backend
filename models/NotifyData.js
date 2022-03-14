@@ -13,6 +13,7 @@ const NotifyDataSchema = mongoose.Schema({
     proID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'proID',
+        default: null
     },
     messageNote: {
         type: String,
