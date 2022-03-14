@@ -6,14 +6,13 @@ const NotifyDataSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'userId',
     },
-    proOwnId: {
+    RecId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'proOwnId',
+        ref: 'recId',
     },
-    proID: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'proID',
-        default: null
+    proId:{
+        type: String,
+        default: ''
     },
     messageNote: {
         type: String,
@@ -25,10 +24,6 @@ const NotifyDataSchema = mongoose.Schema({
     statusNo: {
         type: Boolean,
         default: false
-    },
-    expNotify: {
-        type: Date,
-        default: Date.now,
     },
     date: {
         type: Date,

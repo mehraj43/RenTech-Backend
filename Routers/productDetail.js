@@ -129,7 +129,7 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
     // if(productName){updateProduct.productName=productName};
     if (productName) {
       updateProduct.productName = productName;
-    }
+    } 
     if (model) {
       updateProduct.model = model;
     }

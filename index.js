@@ -4,6 +4,7 @@ const auth = require('./Routers/auth');
 const productDetail = require('./Routers/productDetail');
 const requestProduct = require('./Routers/requestProduct');
 const reportedProduct = require('./Routers/reportedProduct');
+const notifyData = require('./Routers/notifyData');
 var cors = require('cors');
 
 connectToMongo();
@@ -23,6 +24,7 @@ app.use('/api/auth', auth);
 app.use('/api/productDetail', productDetail);
 app.use('/api/requestProduct', requestProduct);
 app.use('/api/reportProduct', reportedProduct);
+app.use('/api/notifyUS', notifyData);
 
 app.listen(port, () => {
   console.log(`App listen to the port - ${port}`);
