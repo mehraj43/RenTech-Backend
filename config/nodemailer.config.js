@@ -27,3 +27,20 @@ module.exports.sendConfirmationEmail = (name, email, OTP) => {
     })
     .catch((err) => console.log(err));
 };
+
+module.exports.sendConfirmProduct = (ownEmail, userEmail, message, proID) => {
+  transport
+  .sendMail({
+    from: admin,
+    to: userEmail,
+    subject: 'Please confirm your account',
+    html: `<h1>Email Confirmation</h1>
+    <h3>${message}</h3>
+    <h2>Product Own MailID : ${ownEmail}</h2>
+    <p>Thank you for subscribing. Please confirm your product by clicking on the following link</p>
+    <a href="http://localhost:3000/productPage/${proID}">Product</a>
+    </div>`,
+  })
+  .catch((err) => console.log(err));
+};
+

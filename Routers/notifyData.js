@@ -3,6 +3,8 @@ const router = express.Router();
 const NotifyData = require('../models/NotifyData');
 const fetchuser = require('../middleware/fetchuser')
 const { body, validationResult } = require('express-validator');
+const nodemailer = require('../config/nodemailer.config');
+const RentUser = require('../models/RentUser');
 
 // Route 1: to post notification use - '/notifyUS/sendNotify'  --Login required
 router.post('/sendNotify/:id', fetchuser, [
@@ -24,20 +26,68 @@ router.post('/sendNotify/:id', fetchuser, [
       data.role = role;
     }
     if (proID) {
-      data.proID = proID;
+      data.proId = proID;
     }
-    console.log(data);
     const Notify = await NotifyData.create(data);
-    console.log("Success");
     res.status(200).json({ success: true, Notify })
   } catch (err) {
     res.status(500).json({ success: false, message: "Something happen" })
   }
 })
 
+// Router 2: to get the notification use - '/notifyUS/notification' --Login required
 router.get('/notification', fetchuser, async (req, res) => {
-  const notification = await NotifyData.find({ RecId: req.user.id });
-  res.status(200).json({ success: true, notification })
+  try {
+    const notification = await NotifyData.find({ RecId: req.user.id });
+    res.status(200).json({ success: true, notification })
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Some error" });
+  }
 });
+
+router.put('/replyNotific/Confirm/:notId', fetchuser, async (req, res) => {
+  try {
+    let notification = await NotifyData.findById({ _id: req.params.notId });
+    notification.role = "user";
+    const userInfo = await RentUser.findById({ _id: notification.userId });
+    notification = await NotifyData.findByIdAndUpdate({ _id: req.params.notId }, { $set: { role: notification.role } })
+    notification.messageNote = "Your request is accepted, check your mail";
+    notification = await NotifyData.create({
+      userId: req.user.id,
+      role: "user",
+      messageNote: notification.messageNote,
+      RecId: notification.userId,
+      proId: notification.proId
+    })
+    const ownInfo = await RentUser.findById({ _id: req.user.id });
+
+    nodemailer.sendConfirmProduct(ownInfo.email, userInfo.email, "Your Request is confirm,Now You can Contact Owner", notification.proId);
+    res.status(200).json({ success: true, message: "Confirm" })
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Some error" })
+  }
+})
+
+
+router.put('/replyNotific/Reject/:notId', fetchuser, async (req, res) => {
+  try {
+    let notification = await NotifyData.findById({ _id: req.params.notId });
+    notification.role = "user";
+
+    notification = await NotifyData.findByIdAndUpdate({ _id: req.params.notId }, { $set: { role: notification.role } })
+    notification.messageNote = "Your request is rejected";
+    notification = await NotifyData.create({
+      userId: req.user.id,
+      role: "user",
+      messageNote: notification.messageNote,
+      RecId: notification.userId,
+      proId: notification.proId
+    })
+    
+    res.status(200).json({ success: true, message: "Request is rejected successfully" })
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Some error" })
+  }
+})
 
 module.exports = router;
