@@ -297,7 +297,8 @@ router.put('/changePass', async (req, res) => {
 // to send user data to admin
 router.get("/adminUserDetails", async (req, res) => {
   try {
-    let adminUsrDtls = await rentUser.find({}, { password: 0 });
+    console.log("Run");
+    let adminUsrDtls = await rentUser.find({role : {$ne : 'Admin'}}).select('-password');
     res.status(200).json({ success: true, adminUsrDtls });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
