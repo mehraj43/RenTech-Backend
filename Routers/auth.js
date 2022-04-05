@@ -61,7 +61,7 @@ router.post(
       };
 
       const authToken = jwt.sign(data, JWT_SECRET);
-      res.json({ success: true, authToken, message: 'You have SignUp successfully' });
+      res.status(200).json({ success: true, authToken, message: 'You have SignUp successfully' });
     } catch (err) {
       res.status(500).json({ success: false, message: 'Some Error occured' });
     }
@@ -256,7 +256,7 @@ router.post('/resPassOTP', async (req, res) => {
     if (!user || !user.active) {
       return res
         .status(400)
-        .json({ error: 'Please try to login with correct credentials' });
+        .json({ message: 'Please try to login with correct credentials' });
     }
     const OTP = otpGenerator.generate(6, {
       upperCaseAlphabets: true,
@@ -265,7 +265,7 @@ router.post('/resPassOTP', async (req, res) => {
     nodemailer.sendConfirmationEmail(req.body.email, req.body.email, OTP);
     res.status(200).send({ success: true, OTP });
   } catch (err) {
-    res.status(500).send('Internal Server Error');
+    res.status(500).send({ message: 'Internal Server Error' });
   }
 });
 
@@ -310,6 +310,21 @@ router.get("/adminProductDetails", async (req, res) => {
     let adminprodDtls = await ProductDetail.find({}, { productImage: 0, proDesc: 0, ratingOfProduct: 0, dateOfRent: 0, dateOfRentExp: 0 });
     // let adminprodDtls = await productdetails.find();
     res.status(200).json({ success: true, adminprodDtls });
+  } catch (err) {
+    res.status(500).send({ success: false, message: 'Internal Server Error' });
+  }
+})
+
+// To diactivate or activate the user  ---Not verified yet 
+router.put('/activeUSer/:id', fetchuser, async (req, res) => {
+  try {
+    const adminDetail = await rentUser.findById({ _id: req.user.id }).select('-password')
+    if (adminDetail.role != 'Admin') {
+      res.status(400).send({ success: false, message: 'You are not autherized person' })
+    }
+    const value = req.body.value;
+    const updateUser = await rentUser.findByIdAndUpdate({ _id: req.params.id }, { $set: { active: value } })
+    res.status(200).send({ success: true, message: updateUser.active })
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
