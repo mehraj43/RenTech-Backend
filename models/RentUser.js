@@ -19,6 +19,11 @@ const RentUserSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    // To check the role of user
+    role:{
+        type: String,
+        default: 'user'
+    },
     active: {
         type: Boolean,
         default: true

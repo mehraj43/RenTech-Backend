@@ -61,9 +61,9 @@ router.post(
       };
 
       const authToken = jwt.sign(data, JWT_SECRET);
-      res.json({ success: true, authToken, message:'You have SignUp successfully' });
+      res.status(200).json({ success: true, authToken, message: 'You have SignUp successfully' });
     } catch (err) {
-      res.status(500).json({ success: false, message:'Some Error occured'});
+      res.status(500).json({ success: false, message: 'Some Error occured' });
     }
   }
 );
@@ -108,9 +108,9 @@ router.post(
       };
       const authToken = jwt.sign(payload, JWT_SECRET);
 
-      res.json({ success: true, authToken, message:'Login Successful' });
+      res.json({ success: true, authToken, message: 'Login Successful' });
     } catch (err) {
-      res.status(500).json({ success: false, message:'Some Error occured'});
+      res.status(500).json({ success: false, message: 'Some Error occured' });
     }
   }
 );
@@ -122,7 +122,7 @@ router.get('/getuser', fetchuser, async (req, res) => {
     const user = await rentUser.findById(userId).select('-password');
     res.send(user);
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -148,7 +148,7 @@ router.put('/updateDetail', fetchuser, async (req, res) => {
       .select('-password');
     res.send(user);
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -160,7 +160,7 @@ router.delete('/deleteUser:id', fetchuser, async (req, res) => {
     const user = await rentUser.findByIdAndDelete(userId).select('-password');
     res.send(user);
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -192,7 +192,7 @@ router.put('/addBookMarkProducts', fetchuser, async (req, res) => {
       return res.status(404).send('Not Allowed');
     }
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -227,10 +227,10 @@ router.put('/removeFromBookMark', fetchuser, async (req, res) => {
         res.send({ success: false, message: 'Product is already removed' });
       }
     } else {
-      return res.status(404).json({success:false,message:'Not Allowed'});
+      return res.status(404).json({ success: false, message: 'Not Allowed' });
     }
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -256,7 +256,7 @@ router.post('/resPassOTP', async (req, res) => {
     if (!user || !user.active) {
       return res
         .status(400)
-        .json({ error: 'Please try to login with correct credentials' });
+        .json({ message: 'Please try to login with correct credentials' });
     }
     const OTP = otpGenerator.generate(6, {
       upperCaseAlphabets: true,
@@ -265,7 +265,7 @@ router.post('/resPassOTP', async (req, res) => {
     nodemailer.sendConfirmationEmail(req.body.email, req.body.email, OTP);
     res.status(200).send({ success: true, OTP });
   } catch (err) {
-    res.status(500).send('Internal Server Error');
+    res.status(500).send({message:'Internal Server Error'});
   }
 });
 
@@ -293,5 +293,20 @@ router.put('/changePass', async (req, res) => {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
 });
+
+// To diactivate or activate the user  ---Not verified yet 
+router.put('/activeUSer/:id', fetchuser, async (req, res) => {
+  try {
+    const adminDetail = await rentUser.findById({ _id: req.user.id }).select('-password')
+    if (adminDetail.role != 'Admin') {
+      res.status(400).send({ success: false, message: 'You are not autherized person' })
+    }
+    const value = req.body.value;
+    const updateUser = await rentUser.findByIdAndUpdate({ _id: req.params.id }, { $set: { active: value } })
+    res.status(200).send({ success: true, message: updateUser.active })
+  } catch (err) {
+    res.status(500).send({ success: false, message: 'Internal Server Error' });
+  }
+})
 
 module.exports = router;
