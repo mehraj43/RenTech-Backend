@@ -23,7 +23,17 @@ router.post('/ReportProduct', fetchuser, [
         const Report = await ReportProduct.create(newReport);
         res.status(200).json({ success: true, message: 'Report successfully submitted' });
     } catch (err) {
-        res.status(500).json({success:false,message:'Some Error'})
+        res.status(500).json({ success: false, message: 'Some Error' })
+    }
+})
+
+// to send report details to admin
+router.get("/adminreportDetails", async (req, res) => {
+    try {
+        let adminrepDtls = await ReportProduct.find({}, {});
+        res.status(200).json({ success: true, adminrepDtls });
+    } catch (err) {
+        res.status(500).send({ success: false, message: 'Internal Server Error' });
     }
 })
 

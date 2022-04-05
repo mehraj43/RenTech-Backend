@@ -15,7 +15,7 @@ const { JWT_SECRET } = require('../config/auth.config');
 
 const nodemailer = require('../config/nodemailer.config');
 
-// ROUTE 1: Creating a User using : POST '/api/auth/createuser'  -Login not required
+// ROUTE 1: Creating a User using : POST '/api/a  uth/createuser'  -Login not required
 router.post(
   '/createuser',
   [
@@ -61,9 +61,9 @@ router.post(
       };
 
       const authToken = jwt.sign(data, JWT_SECRET);
-      res.json({ success: true, authToken, message:'You have SignUp successfully' });
+      res.json({ success: true, authToken, message: 'You have SignUp successfully' });
     } catch (err) {
-      res.status(500).json({ success: false, message:'Some Error occured'});
+      res.status(500).json({ success: false, message: 'Some Error occured' });
     }
   }
 );
@@ -108,9 +108,9 @@ router.post(
       };
       const authToken = jwt.sign(payload, JWT_SECRET);
 
-      res.json({ success: true, authToken, message:'Login Successful' });
+      res.json({ success: true, authToken, message: 'Login Successful' });
     } catch (err) {
-      res.status(500).json({ success: false, message:'Some Error occured'});
+      res.status(500).json({ success: false, message: 'Some Error occured' });
     }
   }
 );
@@ -122,7 +122,7 @@ router.get('/getuser', fetchuser, async (req, res) => {
     const user = await rentUser.findById(userId).select('-password');
     res.send(user);
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -148,7 +148,7 @@ router.put('/updateDetail', fetchuser, async (req, res) => {
       .select('-password');
     res.send(user);
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -160,7 +160,7 @@ router.delete('/deleteUser:id', fetchuser, async (req, res) => {
     const user = await rentUser.findByIdAndDelete(userId).select('-password');
     res.send(user);
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -192,7 +192,7 @@ router.put('/addBookMarkProducts', fetchuser, async (req, res) => {
       return res.status(404).send('Not Allowed');
     }
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -227,10 +227,10 @@ router.put('/removeFromBookMark', fetchuser, async (req, res) => {
         res.send({ success: false, message: 'Product is already removed' });
       }
     } else {
-      return res.status(404).json({success:false,message:'Not Allowed'});
+      return res.status(404).json({ success: false, message: 'Not Allowed' });
     }
   } catch (err) {
-    res.status(500).json({ success: false, message:'Some Error occured'});
+    res.status(500).json({ success: false, message: 'Some Error occured' });
   }
 });
 
@@ -293,5 +293,26 @@ router.put('/changePass', async (req, res) => {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
 });
+
+// to send user data to admin
+router.get("/adminUserDetails", async (req, res) => {
+  try {
+    let adminUsrDtls = await rentUser.find({}, { password: 0 });
+    res.status(200).json({ success: true, adminUsrDtls });
+  } catch (err) {
+    res.status(500).send({ success: false, message: 'Internal Server Error' });
+  }
+})
+
+// to send product detail to admin
+router.get("/adminProductDetails", async (req, res) => {
+  try {
+    let adminprodDtls = await ProductDetail.find({}, { productImage: 0, proDesc: 0, ratingOfProduct: 0, dateOfRent: 0, dateOfRentExp: 0 });
+    // let adminprodDtls = await productdetails.find();
+    res.status(200).json({ success: true, adminprodDtls });
+  } catch (err) {
+    res.status(500).send({ success: false, message: 'Internal Server Error' });
+  }
+})
 
 module.exports = router;
