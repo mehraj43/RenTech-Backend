@@ -73,9 +73,8 @@ router.put('/replyNotific/Reject/:notId', fetchuser, async (req, res) => {
   try {
     let notification = await NotifyData.findById({ _id: req.params.notId });
     notification.role = "user";
-
     notification = await NotifyData.findByIdAndUpdate({ _id: req.params.notId }, { $set: { role: notification.role } })
-    notification.messageNote = "Your request is rejected";
+    notification.messageNote = "Your request is Rejected";
     notification = await NotifyData.create({
       userId: req.user.id,
       role: "user",
@@ -83,8 +82,7 @@ router.put('/replyNotific/Reject/:notId', fetchuser, async (req, res) => {
       RecId: notification.userId,
       proId: notification.proId
     })
-    
-    res.status(200).json({ success: true, message: "Request is rejected successfully" })
+    res.status(200).json({ success: true, message: "Product Rejected" })
   } catch (error) {
     res.status(500).json({ success: false, message: "Some error" })
   }
