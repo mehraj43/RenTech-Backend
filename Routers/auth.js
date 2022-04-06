@@ -61,7 +61,11 @@ router.post(
       };
 
       const authToken = jwt.sign(data, JWT_SECRET);
-      res.status(200).json({ success: true, authToken, message: 'You have SignUp successfully' });
+      res.status(200).json({
+        success: true,
+        authToken,
+        message: 'You have SignUp successfully',
+      });
     } catch (err) {
       res.status(500).json({ success: false, message: 'Some Error occured' });
     }
@@ -295,40 +299,81 @@ router.put('/changePass', async (req, res) => {
 });
 
 // to send user data to admin
-router.get("/adminUserDetails", async (req, res) => {
+router.get('/adminUserDetails', async (req, res) => {
   try {
-    console.log("Run");
-    let adminUsrDtls = await rentUser.find({role : {$ne : 'Admin'}}).select('-password');
+    console.log('Run');
+    let adminUsrDtls = await rentUser
+      .find({ role: { $ne: 'Admin' } })
+      .select('-password');
     res.status(200).json({ success: true, adminUsrDtls });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
-})
+});
 
 // to send product detail to admin
-router.get("/adminProductDetails", async (req, res) => {
+router.get('/adminProductDetails', async (req, res) => {
   try {
-    let adminprodDtls = await ProductDetail.find({}, { productImage: 0, proDesc: 0, ratingOfProduct: 0, dateOfRent: 0, dateOfRentExp: 0 });
+    let adminprodDtls = await ProductDetail.find(
+      {},
+      {
+        productImage: 0,
+        proDesc: 0,
+        ratingOfProduct: 0,
+        dateOfRent: 0,
+        dateOfRentExp: 0,
+      }
+    );
     // let adminprodDtls = await productdetails.find();
     res.status(200).json({ success: true, adminprodDtls });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
-})
+});
 
-// To diactivate or activate the user  ---Not verified yet 
+// To diactivate or activate the user  ---Not verified yet
 router.put('/activeUSer/:id', fetchuser, async (req, res) => {
   try {
-    const adminDetail = await rentUser.findById({ _id: req.user.id }).select('-password')
+    const adminDetail = await rentUser
+      .findById({ _id: req.user.id })
+      .select('-password');
     if (adminDetail.role != 'Admin') {
-      res.status(400).send({ success: false, message: 'You are not autherized person' })
+      res
+        .status(400)
+        .send({ success: false, message: 'You are not autherized person' });
     }
     const value = req.body.value;
-    const updateUser = await rentUser.findByIdAndUpdate({ _id: req.params.id }, { $set: { active: value } })
-    res.status(200).send({ success: true, message: updateUser.active })
+    const updateUser = await rentUser.findByIdAndUpdate(
+      { _id: req.params.id },
+      { $set: { active: value } }
+    );
+    res.status(200).send({ success: true, message: updateUser.active });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
-})
+});
+
+// To delete product
+router.delete('/deleteProd/:id', fetchuser, async (req, res) => {
+  try {
+    const checkAdmin = await rentUser
+      .findById({ _id: req.user.id })
+      .select('-password');
+    if (checkAdmin.role != 'Admin') {
+      res.status(400).send({
+        success: false,
+        message: 'You are not authorized to perform this action',
+      });
+    }
+    await ProductDetail.findByIdAndDelete({
+      _id: req.params.id,
+    });
+    res
+      .status(200)
+      .send({ success: true, message: 'Product successfully Deleted' });
+  } catch (err) {
+    res.status(500).send({ success: false, message: 'Internal Server Error' });
+  }
+});
 
 module.exports = router;
