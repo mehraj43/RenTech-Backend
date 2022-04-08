@@ -104,6 +104,8 @@ router.post(
           .json({ message: 'Please try to login with correct credentials' });
       }
 
+
+
       // To create a token
       const payload = {
         user: {
@@ -112,7 +114,7 @@ router.post(
       };
       const authToken = jwt.sign(payload, JWT_SECRET);
 
-      res.json({ success: true, authToken, message: 'Login Successful' });
+      res.json({ success: true, user, authToken, message: 'Login Successful' });
     } catch (err) {
       res.status(500).json({ success: false, message: 'Some Error occured' });
     }
@@ -125,6 +127,7 @@ router.get('/getuser', fetchuser, async (req, res) => {
     const userId = req.user.id;
     const user = await rentUser.findById(userId).select('-password');
     res.send(user);
+    // console.log(user);
   } catch (err) {
     res.status(500).json({ success: false, message: 'Some Error occured' });
   }
