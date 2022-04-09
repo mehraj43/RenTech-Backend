@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ReportProduct = require('../models/ReportProduct');
+const rentUser = require('../models/RentUser');
 const fetchuser = require('../middleware/fetchuser')
 const { body, validationResult } = require('express-validator');
 
@@ -30,6 +31,12 @@ router.post('/ReportProduct', fetchuser, [
 // to send report details to admin
 router.get("/adminreportDetails", async (req, res) => {
     try {
+        const checkAdmin = await rentUser
+            .findById({ _id: req.user.id })
+            .select('-password');
+        if (checkAdmin.role != 'Admin') {
+            res.status(400).send({ success: false, message: 'You are not authorized to perform this action' });
+        }
         let adminrepDtls = await ReportProduct.find({}, {});
         res.status(200).json({ success: true, adminrepDtls });
     } catch (err) {

@@ -126,7 +126,7 @@ router.get('/getuser', fetchuser, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await rentUser.findById(userId).select('-password');
-    res.send(user);
+    res.status(200).send(user);
     // console.log(user);
   } catch (err) {
     res.status(500).json({ success: false, message: 'Some Error occured' });
@@ -302,9 +302,14 @@ router.put('/changePass', async (req, res) => {
 });
 
 // to send user data to admin
-router.get('/adminUserDetails', async (req, res) => {
+router.get('/adminUserDetails', fetchuser, async (req, res) => {
   try {
-    console.log('Run');
+    const checkAdmin = await rentUser
+      .findById({ _id: req.user.id })
+      .select('-password');
+    if (checkAdmin.role != 'Admin') {
+      res.status(400).send({ success: false, message: 'You are not authorized to perform this action' });
+    }
     let adminUsrDtls = await rentUser
       .find({ role: { $ne: 'Admin' } })
       .select('-password');
@@ -315,8 +320,14 @@ router.get('/adminUserDetails', async (req, res) => {
 });
 
 // to send product detail to admin
-router.get('/adminProductDetails', async (req, res) => {
+router.get('/adminProductDetails', fetchuser, async (req, res) => {
   try {
+    const checkAdmin = await rentUser
+      .findById({ _id: req.user.id })
+      .select('-password');
+    if (checkAdmin.role != 'Admin') {
+      res.status(400).send({ success: false, message: 'You are not authorized to perform this action' });
+    }
     let adminprodDtls = await ProductDetail.find(
       {},
       {
@@ -337,18 +348,17 @@ router.get('/adminProductDetails', async (req, res) => {
 // To diactivate or activate the user  ---Not verified yet
 router.put('/activeUSer/:id', fetchuser, async (req, res) => {
   try {
-    const adminDetail = await rentUser
+    const checkAdmin = await rentUser
       .findById({ _id: req.user.id })
       .select('-password');
-    if (adminDetail.role != 'Admin') {
-      res
-        .status(400)
-        .send({ success: false, message: 'You are not autherized person' });
+    if (checkAdmin.role != 'Admin') {
+      res.status(400).send({ success: false, message: 'You are not authorized to perform this action' });
     }
-    const value = req.body.value;
+    console.log(adminDetail.role);
+    const value1 = req.body.value;
     const updateUser = await rentUser.findByIdAndUpdate(
       { _id: req.params.id },
-      { $set: { active: value } }
+      { $set: { active: value1 } }
     );
     res.status(200).send({ success: true, message: updateUser.active });
   } catch (err) {
@@ -368,15 +378,36 @@ router.delete('/deleteProd/:id', fetchuser, async (req, res) => {
         message: 'You are not authorized to perform this action',
       });
     }
-    await ProductDetail.findByIdAndDelete({
+    const prod = await ProductDetail.findByIdAndDelete({
       _id: req.params.id,
     });
-    res
-      .status(200)
-      .send({ success: true, message: 'Product successfully Deleted' });
+    res.status(200).send({ success: true, message: 'Product successfully Deleted' });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
 });
+
+// to update user details
+router.put('/updateusrdtls', fetchuser, async (req, res) => {
+  try {
+    const { name, location } = req.body;
+    let updateUsrDtls = {}
+    if (name) {
+      updateUsrDtls.name = name;
+    }
+    if (location) {
+      updateUsrDtls.location = location;
+    }
+
+    // find the user to be updated
+    let user = await rentUser.findById(req.params.id)
+    if (user) {
+      let userDtls = await rentUser.findByIdAndUpdate({ _id: req.params.id }, { $set: updateUsrDtls }, { new: true });
+      res.status(200).json({ success: true, message: 'Your User details has been successfully updated' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+})
 
 module.exports = router;

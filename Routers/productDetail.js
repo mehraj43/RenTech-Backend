@@ -91,15 +91,31 @@ router.post(
 
 // ROUTE 2 is for the show the product to none login user
 // ROUTE 2: Get product using : GET "api/productDetail/getProduct"  -Login not required
-router.get('/getProduct/:category', async (req, res) => {
+router.post('/getProduct/:category', async (req, res) => {
   try {
     let products = {};
     let search = req.header('search');
+    let location = req.body.location;
+    let count = req.body.count;
+    let maxPrice = req.body.maxPrice;
+    if (!count) {
+      count = 1;
+    }
     if (search) {
       search = new RegExp(`${search}`, "i");
-      products = await ProductDetail.find({ $and: [{ category: req.params.category }, { productName: { $regex: search } }] });
+      if (location) {
+        location = new RegExp(`${location}`, "i");
+        products = await ProductDetail.find({ $and: [{ category: req.params.category }, { productName: { $regex: search } }, { location: { $regex: location } }, { noOfProduct: { $gte: count } },{price: {$lte : maxPrice}}] });
+      } else {
+        products = await ProductDetail.find({ $and: [{ category: req.params.category }, { productName: { $regex: search } }, { noOfProduct: { $gte: count } },{price: {$lte : maxPrice}}] });
+      }
     } else {
-      products = await ProductDetail.find({ category: req.params.category });
+      if (location) {
+        location = new RegExp(`${location}`, "i");
+        products = await ProductDetail.find({ $and: [{ category: req.params.category }, { location: { $regex: location } }, { noOfProduct: { $gte: count } },{price: {$lte : maxPrice}}] });
+      } else {
+        products = await ProductDetail.find({ category: req.params.category, noOfProduct: { $gte: count },price: {$lte : maxPrice} });
+      }
     }
     res.status(200).json({ success: true, products });
   } catch (err) {
@@ -129,7 +145,7 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
     // if(productName){updateProduct.productName=productName};
     if (productName) {
       updateProduct.productName = productName;
-    } 
+    }
     if (model) {
       updateProduct.model = model;
     }
