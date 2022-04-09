@@ -387,26 +387,21 @@ router.delete('/deleteProd/:id', fetchuser, async (req, res) => {
   }
 });
 
-// to update user details
-router.put('/updateusrdtls', fetchuser, async (req, res) => {
+// to update user detatils
+router.put('/changeUserDetails', fetchuser, async (req, res) => {
   try {
     const { name, location } = req.body;
-    let updateUsrDtls = {}
+    let userDetails = {};
     if (name) {
-      updateUsrDtls.name = name;
+      userDetails.name = name;
     }
     if (location) {
-      updateUsrDtls.location = location;
+      userDetails.location = location;
     }
-
-    // find the user to be updated
-    let user = await rentUser.findById(req.params.id)
-    if (user) {
-      let userDtls = await rentUser.findByIdAndUpdate({ _id: req.params.id }, { $set: updateUsrDtls }, { new: true });
-      res.status(200).json({ success: true, message: 'Your User details has been successfully updated' });
-    }
+    const user = await rentUser.findByIdAndUpdate({ _id: req.user.id }, { $set: userDetails },{ new: true }).select('-password');
+    res.status(200).send({ success: true, message: 'Update Successfully' });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Internal Server Error' });
+    res.status(500).send({ success: false, message: 'Internal Server Error' });
   }
 })
 
