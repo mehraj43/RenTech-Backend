@@ -140,8 +140,8 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
     return res.status(400).json({ message: 'Price must be a positive number' });
   }
   try {
-    const { productName, model, price, location, duration, noOfProduct } = req.body;
-    let updateProduct = {};
+    const { productName, model, price, location, duration, noOfProduct, available } = req.body;
+    let updateProduct = { available: available };
     // if(productName){updateProduct.productName=productName};
     if (productName) {
       updateProduct.productName = productName;
@@ -161,6 +161,9 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
     if (noOfProduct) {
       updateProduct.noOfProduct = noOfProduct;
     }
+    // if (available){
+    //   updateProduct.available = available;
+    // }
     // Find the product to be Updated
     let Product = await ProductDetail.findById(req.params.id);
     if (!Product) {
@@ -177,7 +180,7 @@ router.put('/updateProduct/:id', fetchuser, async (req, res) => {
       { $set: updateProduct },
       { new: true }
     );
-    res.status(200).json({ success: true, message: 'Your Product details is successfully updated' });
+    res.status(200).json({ success: true, message: 'Your Product details is successfully updated', Product});
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }

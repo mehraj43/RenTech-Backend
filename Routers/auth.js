@@ -354,7 +354,6 @@ router.put('/activeUSer/:id', fetchuser, async (req, res) => {
     if (checkAdmin.role != 'Admin') {
       res.status(400).send({ success: false, message: 'You are not authorized to perform this action' });
     }
-    console.log(adminDetail.role);
     const value1 = req.body.value;
     const updateUser = await rentUser.findByIdAndUpdate(
       { _id: req.params.id },

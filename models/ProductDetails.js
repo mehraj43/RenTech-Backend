@@ -39,6 +39,10 @@ const ProductDetailSchema = mongoose.Schema({
     type: Number,
     default: 0
   },
+  available: {
+    type: Boolean,
+    default: true
+  },
   price: {
     type: Number,
     required: true,
@@ -54,15 +58,6 @@ const ProductDetailSchema = mongoose.Schema({
   userOfProduct:{
     type: String,
     default: null
-  },
-  // To check the product is already ranted or not or when
-  dateOfRent:{
-    type: Date,
-    default: Date.now,
-  },
-  dateOfRentExp:{
-    type: Date,
-    default: Date.now,
   },
   date: {
     type: Date,
