@@ -17,6 +17,9 @@ router.post('/sendNotify/:id', fetchuser, [
   }
   try {
     const { role, proID, messageNote } = req.body;
+    if(req.user.id == req.params.id){
+      return res.status(400).json({ success: false, message: "You Can't Request" });
+    }
     let data = {
       userId: req.user.id,
       messageNote: messageNote,
@@ -73,7 +76,7 @@ router.put('/replyNotific/Reject/:notId', fetchuser, async (req, res) => {
   try {
     let notification = await NotifyData.findById({ _id: req.params.notId });
     notification.role = "user";
-    notification = await NotifyData.findByIdAndUpdate({ _id: req.params.notId }, { $set: { role: notification.role } })
+    notification = await NotifyData.findByIdAndDelete({ _id: req.params.notId })
     notification.messageNote = "Your request is Rejected";
     notification = await NotifyData.create({
       userId: req.user.id,

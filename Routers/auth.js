@@ -67,6 +67,7 @@ router.post(
         message: 'You have SignUp successfully',
       });
     } catch (err) {
+      console.log(err);
       res.status(500).json({ success: false, message: 'Some Error occured' });
     }
   }
