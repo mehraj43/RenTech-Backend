@@ -14,6 +14,7 @@ const { JWT_SECRET } = require('../config/auth.config');
 // const JWT_SECRET = 'RentUser'; // My sign value
 
 const nodemailer = require('../config/nodemailer.config');
+const RentUser = require('../models/RentUser');
 
 // ROUTE 1: Creating a User using : POST '/api/a  uth/createuser'  -Login not required
 router.post(
@@ -49,6 +50,7 @@ router.post(
       user = await rentUser.create({
         name: req.body.name,
         location: req.body.location,
+        gender: req.body.gender,
         email: req.body.email,
         password: secPass,
       });
@@ -245,12 +247,19 @@ router.put('/removeFromBookMark', fetchuser, async (req, res) => {
 // Sending OTP to verify email
 router.post('/getOTP', async (req, res) => {
   try {
-    const OTP = otpGenerator.generate(6, {
-      upperCaseAlphabets: true,
-      specialChars: true,
-    });
-    nodemailer.sendConfirmationEmail(req.body.email, req.body.email, OTP);
-    res.status(200).send({ success: true, OTP });
+    const user = await rentUser.find({ email: req.body.email });
+    if (user) {
+      console.log(user);
+      res.status(400).send({ success: false, message: 'User with this Email-Id already exists' })
+    } else {
+      console.log("user");
+      const OTP = otpGenerator.generate(6, {
+        upperCaseAlphabets: true,
+        specialChars: true,
+      });
+      nodemailer.sendConfirmationEmail(req.body.email, req.body.email, OTP);
+      res.status(200).send({ success: true, OTP });
+    }
   } catch (err) {
     console.log(err);
     res.status(500).send('Internal Server Error');
@@ -398,7 +407,7 @@ router.put('/changeUserDetails', fetchuser, async (req, res) => {
     if (location) {
       userDetails.location = location;
     }
-    const user = await rentUser.findByIdAndUpdate({ _id: req.user.id }, { $set: userDetails },{ new: true }).select('-password');
+    const user = await rentUser.findByIdAndUpdate({ _id: req.user.id }, { $set: userDetails }, { new: true }).select('-password');
     res.status(200).send({ success: true, message: 'Update Successfully' });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
