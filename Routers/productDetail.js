@@ -5,7 +5,7 @@ const rentUser = require('../models/RentUser');
 const fetchuser = require('../middleware/fetchuser');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
-const RentUser = require('../models/RentUser');
+// const RentUser = require('../models/RentUser');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -250,9 +250,30 @@ router.get('/totalProduct', async (req, res) => {
       ]
     )
 
+    const noOfmaleAndFemale = await rentUser.aggregate(
+      [
+        { $sort: { gender: 1 }},
+        {
+          $group:{
+            _id: "$gender",
+            TotalStrength: {$sum :1},
+          }
+        },
+      ]
+    )
+
+    console.log(noOfmaleAndFemale);
+
     let productNames = [];
     let totalProducts = [];
     let popularityOfProducts = [];
+    let genders = [];
+    let totalStrength = [];
+
+    noOfmaleAndFemale.forEach(gender => {
+      genders.push(gender._id);
+      totalStrength.push(gender.TotalStrength);
+    })
 
     NoOfProducts.forEach(element => {
       productNames.push(element._id);
@@ -260,7 +281,7 @@ router.get('/totalProduct', async (req, res) => {
       popularityOfProducts.push(element.MostPopular);
     });
 
-    res.status(200).json({ success: true, productNames, totalProducts, popularityOfProducts });
+    res.status(200).json({ success: true, productNames, totalProducts, popularityOfProducts, genders, totalStrength });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
@@ -280,9 +301,9 @@ router.get('/myProductAna', fetchuser, async (req, res) => {
       const rating = JSON.parse(element.ratingOfProduct);
       let allRating = 0;
       rating.forEach(rate => {
-        allRating += rate.rating;
+        allRating += Number(rate.rating);
       });
-      if (allRating == '') {
+      if (allRating == 0) {
         ratingOfProducts.push(0);
       } else {
         ratingOfProducts.push(allRating / rating.length);
