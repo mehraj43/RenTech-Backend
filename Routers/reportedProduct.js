@@ -29,7 +29,7 @@ router.post('/ReportProduct', fetchuser, [
 })
 
 // to send report details to admin
-router.get("/adminreportDetails", async (req, res) => {
+router.get("/adminreportDetails", fetchuser, async (req, res) => {
     try {
         const checkAdmin = await rentUser
             .findById({ _id: req.user.id })
@@ -37,7 +37,7 @@ router.get("/adminreportDetails", async (req, res) => {
         if (checkAdmin.role != 'Admin') {
             res.status(400).send({ success: false, message: 'You are not authorized to perform this action' });
         }
-        let adminrepDtls = await ReportProduct.find({}, {});
+        let adminrepDtls = await ReportProduct.find();
         res.status(200).json({ success: true, adminrepDtls });
     } catch (err) {
         res.status(500).send({ success: false, message: 'Internal Server Error' });

@@ -248,7 +248,7 @@ router.put('/removeFromBookMark', fetchuser, async (req, res) => {
 router.post('/getOTP', async (req, res) => {
   try {
     const user = await rentUser.find({ email: req.body.email });
-    if (user) {
+    if (user.email) {
       console.log(user);
       res.status(400).send({ success: false, message: 'User with this Email-Id already exists' })
     } else {
