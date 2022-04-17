@@ -368,6 +368,13 @@ router.put('/activeUSer/:id', fetchuser, async (req, res) => {
       { _id: req.params.id },
       { $set: { active: value1 } }
     );
+    let status = "activated Again";
+    let messageToUSer = "Your account is now Activated again";
+    if (updateUser.active) {
+      status = "deactivated  Due to many reports on your products";
+      messageToUSer = "To active your account, you need to contact to the official id";
+    }
+    nodemailer.sendActivationMessage(updateUser.email, `Your Id Got ${status}`, messageToUSer, updateUser.name, "RenTech EmailID = rentech45@gmail.com")
     res.status(200).send({ success: true, message: updateUser.active });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });
@@ -389,6 +396,10 @@ router.delete('/deleteProd/:id', fetchuser, async (req, res) => {
     const prod = await ProductDetail.findByIdAndDelete({
       _id: req.params.id,
     });
+
+    const user = await rentUser.find({ _id: prod.userId });
+
+    nodemailer.sendActivationMessage(user[0].email, "Your Product got deleted due to many reports on your product", "If many more reports come to your id again, your accound will be get blocked", user[0].name, `<h4>Product Name: ${prod.productName}</h4>`);
     res.status(200).send({ success: true, message: 'Product successfully Deleted' });
   } catch (err) {
     res.status(500).send({ success: false, message: 'Internal Server Error' });

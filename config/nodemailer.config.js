@@ -44,3 +44,32 @@ module.exports.sendConfirmProduct = (ownEmail, userEmail, message, proID) => {
   .catch((err) => console.log(err));
 };
 
+module.exports.sendActivationMessage = (userEmail, message, message2, userName,impMessage) => {
+  transport
+  .sendMail({
+    from: admin,
+    to: userEmail,
+    subject: `${message}`,
+    html: `<h1>${message}</h1>
+    <h2>User Name : ${userName}</h2>
+    ${impMessage}
+    <p>${message2}</p>
+    </div>`,
+  })
+  .catch((err) => console.log(err));
+};
+
+module.exports.sendWarning = (userEmail, message, message2, userName, proName) => {
+  transport
+  .sendMail({
+    from: admin,
+    to: userEmail,
+    subject: `${message}`,
+    html: `<h1>${message}</h1>
+    <h2>User Name : ${userName}</h2>
+    <h4>Product Name : ${proName}</h4>
+    <p>${message2}</p>
+    </div>`,
+  })
+  .catch((err) => console.log(err));
+};
