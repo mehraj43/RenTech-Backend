@@ -4,7 +4,7 @@ const NotifyData = require('../models/NotifyData');
 const fetchuser = require('../middleware/fetchuser')
 const { body, validationResult } = require('express-validator');
 const nodemailer = require('../config/nodemailer.config');
-const RentUser = require('../models/RentUser');
+const rentUser = require('../models/RentUser');
 
 // Route 1: to post notification use - '/notifyUS/sendNotify'  --Login required
 router.post('/sendNotify/:id', fetchuser, [
@@ -52,7 +52,7 @@ router.put('/replyNotific/Confirm/:notId', fetchuser, async (req, res) => {
   try {
     let notification = await NotifyData.findById({ _id: req.params.notId });
     notification.role = "user";
-    const userInfo = await RentUser.findById({ _id: notification.userId });
+    const userInfo = await rentUser.findById({ _id: notification.userId });
     notification = await NotifyData.findByIdAndUpdate({ _id: req.params.notId }, { $set: { role: notification.role } })
     notification.messageNote = "Your request is accepted, check your mail";
     notification = await NotifyData.create({
@@ -62,7 +62,7 @@ router.put('/replyNotific/Confirm/:notId', fetchuser, async (req, res) => {
       RecId: notification.userId,
       proId: notification.proId
     })
-    const ownInfo = await RentUser.findById({ _id: req.user.id });
+    const ownInfo = await rentUser.findById({ _id: req.user.id });
 
     nodemailer.sendConfirmProduct(ownInfo.email, userInfo.email, "Your Request is confirm,Now You can Contact Owner", notification.proId);
     res.status(200).json({ success: true, message: "Confirm" })

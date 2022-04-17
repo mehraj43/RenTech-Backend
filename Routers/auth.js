@@ -14,7 +14,6 @@ const { JWT_SECRET } = require('../config/auth.config');
 // const JWT_SECRET = 'RentUser'; // My sign value
 
 const nodemailer = require('../config/nodemailer.config');
-const RentUser = require('../models/RentUser');
 
 // ROUTE 1: Creating a User using : POST '/api/a  uth/createuser'  -Login not required
 router.post(

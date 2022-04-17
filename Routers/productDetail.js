@@ -5,7 +5,6 @@ const rentUser = require('../models/RentUser');
 const fetchuser = require('../middleware/fetchuser');
 const { body, validationResult } = require('express-validator');
 const multer = require('multer');
-// const RentUser = require('../models/RentUser');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -344,7 +343,7 @@ router.put('/ratePorduct/:id', fetchuser, [
   try {
     const { rating, ratingDesc } = req.body;
     const userID = req.user.id;
-    const { name } = await RentUser.findById({ _id: userID });
+    const { name } = await rentUser.findById({ _id: userID });
     let { ratingOfProduct, userId } = await ProductDetail.findById({ _id: req.params.id });
     if (userID == userId || ratingOfProduct.includes(`${userID}`)) {
       res.status(400).json({ success: false, message: "You are not allowed to rate this product" });
@@ -356,6 +355,7 @@ router.put('/ratePorduct/:id', fetchuser, [
       res.status(200).json({ success: true, ratingOfProduct });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 })
